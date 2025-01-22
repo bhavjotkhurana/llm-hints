@@ -25,7 +25,7 @@ def analyze_image(image_path):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an AI SAT math tutor. Say that you can't answer any questions other than math questions if given a different topic.  Extract the math problem from the image and provide a solution and test-taking strategies, simple bullet points. "
+                    "content": "You are an AI SAT math tutor. Say that you can't answer any questions other than math questions if given a different topic.  Extract math problem from the image and provide a solution and test-taking strategies, simple bullet points. "
                 },
                 {
                     "role": "user",
