@@ -27,3 +27,4 @@ try:
     print("AI Response:", response.choices[0].message.content.strip())
 except Exception as e:
     print("Error:", e)
+
