@@ -5,31 +5,69 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import streamlit as st
-from src.tutor_v2 import tutor_session_v2
+from src.tutor_v2 import initialize_conversation, request_hint
 
-st.title("AI SAT Math Tutor (GPT-4 Single-Step)")
+st.title("SAT Math Tutor (GPT-4 Step-by-Step Hints)")
+
+# Keep track of conversation and which hint the student is on
+if "conversation" not in st.session_state:
+    st.session_state.conversation = None
+
+if "current_hint" not in st.session_state:
+    st.session_state.current_hint = 0  # 0 means no hint yet, 1 => first hint, etc.
 
 # File uploader for the math problem image
 uploaded_file = st.file_uploader("Upload a math problem image", type=["png", "jpg", "jpeg"])
 
-if uploaded_file is not None:
-    # Save the uploaded image to a temp file
+# Button to initialize conversation
+if uploaded_file is not None and st.button("Initialize Tutor"):
     with open("temp_image.png", "wb") as f:
         f.write(uploaded_file.getbuffer())
 
-    st.write("Processing image with GPT-4...")
+    st.session_state.conversation = initialize_conversation("temp_image.png")
+    st.session_state.current_hint = 0
+    st.write("Tutor is ready. Click 'Get Hint' to proceed.")
 
-    # Directly solve the problem
-    response = tutor_session_v2("temp_image.png")
+# Button to request next hint
+if st.session_state.conversation is not None:
+    if st.button("Get Hint"):
+        st.session_state.current_hint += 1
 
-    st.write("### AI Tutor Response:")
-    # Ensure LaTeX equations are displayed properly in Streamlit
-    st.markdown(response)
-else:
-    st.write("Please upload an image to get started.")
+        # If the user tries to get more than 3 hints, cap it at 3 (the third includes the solution)
+        if st.session_state.current_hint > 3:
+            st.session_state.current_hint = 3  # no more than 3
+            st.warning("You have already received the full solution.")
+        else:
+            hint_text = request_hint(
+                st.session_state.conversation,
+                st.session_state.current_hint
+            )
+            st.write(f"### Hint #{st.session_state.current_hint}")
+            st.markdown(hint_text)
 
-st.markdown("---")
-st.markdown(
-    "This app uses GPT-4 (with image support) to read the uploaded math problem directly, "
-    "and provide a step-by-step solution in a single step."
-)
+# Display the conversation so far (optional)
+# if st.session_state.conversation:
+#     st.markdown("---")
+#     st.subheader("Conversation so far (for debugging):")
+
+#     for i, msg in enumerate(st.session_state.conversation):
+#         role = msg["role"]
+#         content = msg["content"]
+
+#         # If this is the user message with the image, let's shorten or skip it
+#         if role == "user" and isinstance(content, list):
+#             # Check if there's an image element in the list
+#             has_image = any(
+#                 (
+#                     ("type" in part and part["type"] == "image_url")
+#                     or ("image_url" in part)
+#                 )
+#                 for part in content
+#             )
+#             if has_image:
+#                 st.write("**User**: [Image data hidden for brevity]")
+#                 continue  # Skip printing the raw content
+
+#         # If we didn't skip, print normally
+#         st.write(f"**{role.capitalize()}**: {content}")
+
