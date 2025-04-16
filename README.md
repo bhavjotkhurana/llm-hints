@@ -1,4 +1,4 @@
-# llm-hints
+# LLM Hints
 
 **llm-hints** is an experimental tool that uses large language models (LLMs) to provide guided hints for SAT math problems based on image inputs. Users upload an image of a math question, and the model returns tutoring-style hints to help the student work through the problem step by step. A user can click the hint button 3 times (max) and on the 3rd press the LLM generates the entire solution with the answer. 
 
